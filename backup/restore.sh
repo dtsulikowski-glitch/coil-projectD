@@ -7,14 +7,24 @@ SNAPSHOT=latest
 DEST=/opt/projectd-restored
 APPLY=0
 YES=0
+# A stack backed up through BACKUP_EXTRA_PATHS (e.g. the live coil-checkin2 deployment) is restored with
+# ITS OWN compose file and .env, given as the paths they had on the backed-up server.
+LIVE_COMPOSE=""
+LIVE_ENV=""
+TOKEN_VAR="${BACKUP_INFLUX_TOKEN_VAR:-INFLUX_TOKEN}"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --snapshot) SNAPSHOT="${2:?missing snapshot}"; shift 2 ;;
     --destination) DEST="${2:?missing destination}"; shift 2 ;;
+    --compose-file) LIVE_COMPOSE="${2:?missing compose path}"; shift 2 ;;
+    --env-file) LIVE_ENV="${2:?missing env path}"; shift 2 ;;
+    --influx-token-var) TOKEN_VAR="${2:?missing variable name}"; shift 2 ;;
     --apply) APPLY=1; shift ;;
     --yes) YES=1; shift ;;
     -h|--help)
-      echo "Usage: $0 [--snapshot latest|ID] [--destination PATH] [--apply --yes]"
+      echo "Usage: $0 [--snapshot latest|ID] [--destination PATH] [--compose-file ORIGINAL_PATH --env-file ORIGINAL_PATH] [--influx-token-var NAME] [--apply --yes]"
+      echo "Without --compose-file the repository's deployment/contabo stack is used; if the snapshot has no"
+      echo "repository .env, exactly one .env under extra/ is used automatically, otherwise pass --env-file."
       exit 0 ;;
     *) echo "Unknown argument: $1" >&2; exit 2 ;;
   esac
@@ -24,6 +34,7 @@ ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 BACKUP_ENV="${BACKUP_ENV:-$ROOT/backup/restic.env}"
 [[ -r "$BACKUP_ENV" ]] || { echo "Missing Restic environment: $BACKUP_ENV" >&2; exit 1; }
 set -a
+# shellcheck source=/dev/null
 source "$BACKUP_ENV"
 set +a
 : "${RESTIC_REPOSITORY:?set in restic.env}"
@@ -37,6 +48,10 @@ if [[ "$APPLY" != 1 ]]; then
   exit 0
 fi
 [[ "$YES" == 1 ]] || { echo "--apply also requires --yes" >&2; exit 2; }
+[[ "$TOKEN_VAR" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || { echo "Invalid --influx-token-var" >&2; exit 2; }
+for original in "$LIVE_COMPOSE" "$LIVE_ENV"; do
+  [[ -z "$original" || "$original" == /* ]] || { echo "--compose-file/--env-file take the absolute path on the backed-up server" >&2; exit 2; }
+done
 [[ "$DEST" == /* && "$DEST" != / && "$DEST" != /opt && "$DEST" != /srv ]] || {
   echo "Unsafe destination: $DEST" >&2; exit 2;
 }
@@ -53,15 +68,49 @@ SNAPSHOT_ROOT="$(dirname "$PROJECT_SRC")"
 for path in influxdb grafana mosquitto-data; do
   [[ -d "$SNAPSHOT_ROOT/$path" ]] || { echo "Snapshot lacks $path" >&2; exit 1; }
 done
-[[ -r "$PROJECT_SRC/deployment/contabo/.env" ]] || { echo "Snapshot lacks deployment .env" >&2; exit 1; }
+
+# Locate the deployment configuration inside the snapshot. Paths only are printed, never contents.
+EXTRA_ROOT="$SNAPSHOT_ROOT/extra"
+if [[ -n "$LIVE_ENV" ]]; then
+  ENV_SRC="$EXTRA_ROOT$LIVE_ENV"
+elif [[ -r "$PROJECT_SRC/deployment/contabo/.env" ]]; then
+  ENV_SRC="$PROJECT_SRC/deployment/contabo/.env"
+else
+  mapfile -t ENV_CANDIDATES < <(find "$EXTRA_ROOT" -type f -name .env 2>/dev/null | sort)
+  if [[ "${#ENV_CANDIDATES[@]}" != 1 ]]; then
+    echo "Snapshot has no repository .env and ${#ENV_CANDIDATES[@]} .env files under extra/:" >&2
+    printf '  %s\n' "${ENV_CANDIDATES[@]#"$EXTRA_ROOT"}" >&2
+    echo "Pass --env-file <original path> (and --compose-file for a hand-built stack)." >&2
+    exit 1
+  fi
+  ENV_SRC="${ENV_CANDIDATES[0]}"
+fi
+[[ -f "$ENV_SRC" && -r "$ENV_SRC" ]] || { echo "Snapshot lacks the deployment .env (${ENV_SRC#"$SNAPSHOT_ROOT"})" >&2; exit 1; }
+if [[ -n "$LIVE_COMPOSE" ]]; then
+  [[ -f "$EXTRA_ROOT$LIVE_COMPOSE" ]] || { echo "Snapshot lacks extra$LIVE_COMPOSE" >&2; exit 1; }
+fi
 
 mkdir -p "$DEST"
 cp -a "$PROJECT_SRC/." "$DEST/"
-COMPOSE=(docker compose --env-file "$DEST/deployment/contabo/.env" -f "$DEST/deployment/contabo/compose.yml")
+if [[ -n "$LIVE_COMPOSE" ]]; then
+  # The live stack's directory keeps its relative paths (configs, certificates) next to its compose file.
+  LIVE_DIR="$DEST/live-deployment"
+  mkdir -p "$LIVE_DIR"
+  cp -a "$EXTRA_ROOT$(dirname -- "$LIVE_COMPOSE")/." "$LIVE_DIR/"
+  RESTORED_ENV="$LIVE_DIR/.env.restored"
+  RESTORED_COMPOSE="$LIVE_DIR/$(basename -- "$LIVE_COMPOSE")"
+else
+  RESTORED_ENV="$DEST/deployment/contabo/.env"
+  RESTORED_COMPOSE="$DEST/deployment/contabo/compose.yml"
+fi
+install -m 600 "$ENV_SRC" "$RESTORED_ENV"
+COMPOSE=(docker compose --env-file "$RESTORED_ENV" -f "$RESTORED_COMPOSE")
 set -a
-source "$DEST/deployment/contabo/.env"
+# shellcheck source=/dev/null
+source "$RESTORED_ENV"
 set +a
-: "${INFLUX_TOKEN:?missing in restored .env}"
+INFLUX_TOKEN="${!TOKEN_VAR:-}"
+[[ -n "$INFLUX_TOKEN" ]] || { echo "$TOKEN_VAR is missing in the restored .env (use --influx-token-var)" >&2; exit 1; }
 
 # Start a fresh InfluxDB, wait for readiness, then restore its native full backup.
 "${COMPOSE[@]}" up -d influxdb

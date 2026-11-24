@@ -123,6 +123,29 @@ class RelayTest(unittest.TestCase):
         self.assertEqual(self.published, [first])
         self.assertEqual(len(self.machine.packets), packets, "no second execution")
 
+    def test_concurrent_duplicate_is_executed_once(self):
+        # Audit 24 Nov F-04: a second handler wins the race between get() and begin(). The loser must
+        # behave like a duplicate: no second wake, and only the stored final result is re-emitted.
+        body = command()
+        payload = json.dumps(body).encode()
+        other = self.make_relay()  # second handler on the same state database
+        real_get = self.relay.store.get
+        seen = {}
+
+        def racing_get(request_id):
+            result = real_get(request_id)
+            if "winner" not in seen:
+                seen["winner"] = other.handle(payload)
+                seen["packets"] = len(self.machine.packets)
+            return result
+
+        self.relay.store.get = racing_get
+        loser = self.relay.handle(payload)
+        self.assertEqual(loser, seen["winner"], "loser re-emits the winner's final result")
+        self.assertEqual(len(self.machine.packets), seen["packets"], "no second execution")
+        finals = [m for m in self.published if m.get("final")]
+        self.assertEqual(finals, [seen["winner"], seen["winner"]], "one execution, one identical re-emit")
+
     def test_duplicate_survives_relay_restart(self):
         body = command()
         first = self.send(body)

@@ -47,7 +47,7 @@ def read_env(path: Path) -> dict[str, str]:
 
 
 def update_env(path: Path, updates: dict[str, str]) -> None:
-    """Replaces or appends KEY=value lines, keeping every other line and the file mode."""
+    """Replaces or appends KEY=value lines, keeping every other line; the result is always mode 0600."""
     lines = path.read_text(encoding="utf-8").splitlines()
     remaining = dict(updates)
     out = []
@@ -60,7 +60,7 @@ def update_env(path: Path, updates: dict[str, str]) -> None:
     if remaining:
         out.append("# Least-privilege InfluxDB tokens (deployment/contabo/scoped_tokens.py)")
         out.extend(f"{key}={value}" for key, value in remaining.items())
-    mode = path.stat().st_mode & 0o777
+    mode = 0o600  # secrets file: never keep a group/world-readable mode
     fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=".env.")
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as handle:

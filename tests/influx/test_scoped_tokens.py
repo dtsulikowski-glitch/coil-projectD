@@ -90,6 +90,13 @@ class ScopedTokensTest(unittest.TestCase):
         for secret in (self.operator, values["INFLUX_TELEGRAF_TOKEN"], values["INFLUX_GRAFANA_TOKEN"]):
             self.assertNotIn(secret, result.stdout + result.stderr)
 
+    def test_world_readable_env_is_made_private(self):
+        # Audit 24 Nov F-08: an existing 0644 .env must not stay readable after the update.
+        self.env.chmod(0o644)
+        result = self.run_script()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(stat.S_IMODE(self.env.stat().st_mode), 0o600)
+
     def test_refuses_duplicates_without_rotate(self):
         self.run_script()
         before = self.env.read_text()

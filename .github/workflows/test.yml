@@ -91,6 +91,9 @@ jobs:
       - name: Check shell script syntax
         run: git ls-files -z '*.sh' | xargs -0 -n1 bash -n
 
+      - name: Test backup/restore.sh snapshot layouts (stubbed restic and docker)
+        run: bash tests/restore/test_restore_layouts.sh
+
       - name: Test the VPN firewall script with real packets (network namespaces)
         run: |
           sudo apt-get update -qq

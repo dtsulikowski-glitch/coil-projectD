@@ -241,7 +241,16 @@ class Relay:
             if known:
                 self.audit("duplicate_in_progress", {"request_id": request_id})
                 return None
-            self.store.begin(request_id, self.clock())
+            if not self.store.begin(request_id, self.clock()):
+                # Lost the race to a concurrent handler for the same ID: begin() is the only admission
+                # decision, so re-read and behave exactly like a duplicate.
+                known, stored = self.store.get(request_id)
+                if stored is not None:
+                    self.audit("duplicate_final", {"request_id": request_id})
+                    self.emit(stored)
+                    return stored
+                self.audit("duplicate_in_progress", {"request_id": request_id})
+                return None
 
         if self.is_malformed(command):
             return self.final(self.result(request_id, target_id, "rejected", True, "malformed"))
