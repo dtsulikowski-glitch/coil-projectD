@@ -165,9 +165,6 @@ systemctl enable --now wg-quick@wg0
 wg show wg0
 ```
 
-> **Snapshots taken before 25 November 2026 contain Grafana 12.1.1** (CVE-2026-27876, CVE-2026-27880). After restoring such a
-> snapshot, set the Grafana image to 12.1.10 or a newer supported patched release before any VPN peer can reach it.
-
 For the standalone functional drill, leave `/etc/wireguard` unchanged and use the separate isolated-Compose procedure instead. Locate the restored project directory and follow its deployment and backup READMEs. Do not blindly start every Compose file: inspect variables, volumes, ports, Compose project name, and network names first. Before changing a running Contabo stack, use read-only `deployment/contabo/reconcile_check.py`.
 
 Minimum standalone validation:
@@ -292,7 +289,7 @@ These values are Telegraf processing time minus source timestamps, not ping. Neg
 | Updates | apt log, reboot, and new SSH session | Completed on 22 November |
 | Docker and stack | Compose status, health checks, 6/6 sensors | Complete; `redeploy-b0414de.txt`; final post-test health also recorded |
 | Repository tests | Ubuntu result without skips | Current `cacdbcb`: 58 unit + 18 restore-layout + 28 firewall-netns checks passed; compile, shell, JSON/YAML and Compose also passed (`ubuntu-regression-cacdbcb.log`). Updated qwerty policy separately passed 31/31 on 25 Nov. Earlier baseline: 56/56 |
-| WireGuard | `wg show`, handshake, and application connectivity | **Darek's laptop activated; real MQTT TLS path, interruption, recovery and fresh handshake verified.** qwerty handshake also observed. |
+| WireGuard | `wg show`, handshake, and application connectivity | **Darek's laptop activated; real MQTT TLS path, interruption, recovery and fresh handshake verified.** VPN handshakes observed on 25 Nov (CET): Jeslito `.10` 12:57, qwerty `.12` 16:41, Mykyta `.21` 17:15, Darek `.22` 21:07 — server `latest-handshakes` joined with the raw `allowed-ips` key mapping (`wg-peer-mapping-2026-11-25.txt`). |
 | B2 restore | exit code 0, snapshot, timing, functional test | **Isolated functional PASS with intervention:** RTO 264 s, active phase 27 s, new ingestion verified. Fresh-VM/no-intervention retest and source credential/history follow-up remain open. |
 | Alert 2 — missing data | API log, alert, and recovery | Complete for a stopped simulator and for the physical Szczecin laptop VPN interruption |
 | VPN interruption | interruption log, alert, new handshake | **Szczecin PASS 25 Nov:** 180.299 s break, 3 Alert 2, queue drain, 30 sequential InfluxDB rows/sensor. Mati side remains open. |
@@ -305,7 +302,7 @@ These values are Telegraf processing time minus source timestamps, not ping. Neg
 - Production MQTT broker fix: Jeslito reported it deployed on 24 Nov. Direct production client-ID takeover and 1 MB negative tests are still recommended; the passed ACL test does not replace them.
 - Production Team Dashboard and optional B2 mirror: Jeslito.
 - Faculty WireGuard QR profiles: send only after confirming key compatibility; standalone uses new keys.
-- Team accounts: provisioned on 24 Nov. Jeslito has VPN `.10`, Grafana Admin and SSH/sudo; qwerty_l3y has VPN `.12` and Grafana Editor, with a real handshake observed; Mykyta has VPN `.21` and Grafana Editor. Darek reported all three Grafana logins completed; all three password files were deleted on 25 Nov and a follow-up check found zero. Mykyta's VPN handshake was observed at 17:15 CET on 25 Nov; Jeslito's `.10` handshake was observed at 12:57 CET (key mapping in `wg-peer-mapping-2026-11-25.txt`); do not grant everyone root/sudo/docker access.
+- Team accounts: provisioned on 24 Nov. Jeslito has VPN `.10`, Grafana Admin and SSH/sudo; qwerty_l3y has VPN `.12` and Grafana Editor, with a real handshake observed; Mykyta has VPN `.21` and Grafana Editor. Darek reported all three Grafana logins and all three team VPN connections completed; all three password files were deleted on 25 Nov and a follow-up check found zero. VPN handshakes observed on 25 Nov (CET): Jeslito `.10` 12:57, qwerty `.12` 16:41, Mykyta `.21` 17:15, Darek `.22` 21:07 — server `latest-handshakes` joined with the raw `allowed-ips` key mapping; see [the joined table](wg-peer-mapping-2026-11-25.txt). Do not grant everyone root/sudo/docker access.
 - Darek's compromised laptop peer was revoked and a new public key enrolled on 24 Nov. Activation, MQTT connectivity, physical interruption, recovery and a fresh handshake were subsequently verified on 25 Nov.
 - Faculty access evidence requires a real VPN login/handshake and a successful read-only application session, not merely a generated QR profile.
 - Email alerts remain unverified on standalone because SMTP is disabled. If email notification is a minimum requirement, Jeslito must demonstrate it on production.
