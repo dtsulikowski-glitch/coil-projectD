@@ -37,7 +37,7 @@ ip -n "$SRV" addr add 10.66.0.1/24 dev wg0; ip -n "$SRV" link set wg0 up
 ip -n "$SRV" addr add 172.30.0.1/24 dev "b$SUFFIX"; ip -n "$SRV" link set "b$SUFFIX" up
 ip netns exec "$SRV" sysctl -qw net.ipv4.ip_forward=1
 ip -n "$CLI" addr add 10.66.0.21/24 dev "c$SUFFIX"; ip -n "$CLI" link set "c$SUFFIX" up
-for extra in 10.66.0.10 10.66.0.22 10.66.0.31 10.66.0.16 10.66.0.50; do
+for extra in 10.66.0.10 10.66.0.12 10.66.0.22 10.66.0.31 10.66.0.16 10.66.0.50; do
   ip -n "$CLI" addr add "$extra/32" dev "c$SUFFIX"
 done
 ip -n "$CTR" addr add 172.30.0.2/24 dev "k$SUFFIX"; ip -n "$CTR" link set "k$SUFFIX" up
@@ -104,8 +104,11 @@ if ip netns exec "$SRV" env ENABLE_PHASE7=0 bash "$SCRIPT" --check >/dev/null; t
 else echo "FAIL  --check reported a mismatch"; fail=$((fail + 1)); fi
 
 expect 10.66.0.10 8883 open   "Jeslito MQTT"
+expect 10.66.0.12 8883 open   "qwerty MQTT"
 expect 10.66.0.21 8883 open   "Mykyta MQTT"
 expect 10.66.0.22 8883 open   "Darek MQTT"
+expect 10.66.0.12 3000 open   "qwerty Grafana"
+expect 10.66.0.12 8088 open   "qwerty team dashboard"
 expect 10.66.0.21 3000 open   "member Grafana"
 expect 10.66.0.31 3000 open   "faculty Grafana"
 expect 10.66.0.31 8088 open   "faculty team dashboard (host 8088 -> container 9999)"

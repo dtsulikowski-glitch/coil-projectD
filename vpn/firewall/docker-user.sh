@@ -40,8 +40,8 @@ WG_IFACE="${WG_IFACE:-wg0}"
 ENABLE_PHASE7="${ENABLE_PHASE7:-0}"
 
 # Allow lists. Keep them identical to documents/vpn-plan.md section 3 and vpn/peers.md.
-MQTT_PEERS=(10.66.0.10 10.66.0.21 10.66.0.22)                         # members / simulator hosts
-DASHBOARD_PEERS=(10.66.0.10 10.66.0.21 10.66.0.22 10.66.0.31 10.66.0.32) # members + faculty viewers
+MQTT_PEERS=(10.66.0.10 10.66.0.12 10.66.0.21 10.66.0.22)              # members / simulator hosts
+DASHBOARD_PEERS=(10.66.0.10 10.66.0.12 10.66.0.21 10.66.0.22 10.66.0.31 10.66.0.32) # members + faculty viewers
 PHASE7_MQTT_PEERS=(10.66.0.16 10.66.0.41 10.66.0.42)                  # monitoring agents, WoL relay
 PHASE7_API_PEERS=(10.66.0.10 10.66.0.12 10.66.0.13 10.66.0.14 10.66.0.21 10.66.0.22 10.66.0.23 10.66.0.24)
 

@@ -1,6 +1,6 @@
 # Project D — Deployment and Restore Runbook
 
-**Check-in 5 evidence package — status as of 23 November 2026**
+**Check-in 5 evidence package — status as of 25 November 2026**
 
 Purpose: deploy Project D on a new server, restore data and configuration from restic/B2, measure the restore time, and retain reproducible evidence.
 
@@ -8,7 +8,7 @@ Purpose: deploy Project D on a new server, restore data and configuration from r
 
 ## Current standalone status
 
-Server `<standalone-server>` (Ubuntu 24.04) runs commit `b0414de7ea38f8ab7dea5da778ff7f7e03b45188`. Earlier local fixes were replaced by that commit without `git clean`, volume deletion, or changes to existing secrets.
+The baseline deployment was commit `b0414de7ea38f8ab7dea5da778ff7f7e03b45188`. Following the 24 November audit, the live server was fast-forwarded to `cacdbcb`; Grafana 12.1.10 is healthy and Mosquitto 2.0.23, Telegraf and all six simulators reconnected successfully. Earlier local fixes were replaced without `git clean`, volume deletion, or disclosure of existing secrets.
 
 Verified on the standalone server:
 
@@ -16,11 +16,12 @@ Verified on the standalone server:
 - fresh data from 6/6 sensors; Grafana and Team Dashboard healthy; MQTT over TLS working;
 - only SSH `22/tcp` and WireGuard `51820/udp` listen publicly; project services bind to `10.66.0.1` or loopback;
 - 56/56 Ubuntu unit tests passed, together with Python compilation, shell syntax checks, and `docker compose config -q`;
-- isolated network-namespace firewall test: 28/28 passed;
+- baseline isolated network-namespace firewall test: 28/28 passed;
+- updated per-peer firewall policy including qwerty `.12`: **31/31 passed on 25 November**, using only temporary network namespaces; the revised rules were **not enabled** on the live host;
 - Alert 2 for all three Szczecin sensors and recovery of all six alert instances to `Normal` passed; see section 8;
 - `delay_ms` analysis completed for 444 normal-operation samples and a separate recovery window; see section 9.
 
-The standalone server uses **new secrets and WireGuard keys** and an independent peer registry at `/root/projectd-profiles/peers.md`. It is not a restore of production data or configuration from B2. Do not use the production QR profiles as profiles for this server.
+The running standalone stack uses **new secrets and WireGuard keys** and an independent peer registry at `/root/projectd-profiles/peers.md`. A real production B2 snapshot was restored **to separate files only** on 25 November; no restored production configuration or service was activated. Do not use the production QR profiles as profiles for this server.
 
 ## 1. Prerequisites
 
@@ -91,55 +92,73 @@ After a server reboot, Docker should start after `wg-quick@wg0` through `deploym
 
 ## 5. Transfer restic/B2 credentials securely from Contabo
 
-The source file is `/etc/projectd/backup.env` **on Contabo**. Jeslito has root access there. Do not substitute addresses found in `known_hosts` or terminal history for Contabo. `bilewski.am.szczecin.pl:40071` is not a Project D server.
+The source files are `/etc/projectd/backup.env` and the credentials file named by its `BACKUP_ENV` setting **on Contabo**. In the delivered configuration that target is `/etc/projectd/restic.env`. Jeslito has root access there. Do not substitute addresses found in `known_hosts` or terminal history for Contabo. `bilewski.am.szczecin.pl:40071` is not a Project D server.
 
-Do not paste the file contents into chat. After agreeing access, Jeslito runs these commands **on Contabo**:
+**Status on 25 November:** both files are present, root-owned and mode `600`. Variable-name inspection confirmed that `restic.env` contains `RESTIC_REPOSITORY`, `RESTIC_PASSWORD`, `B2_ACCOUNT_ID` and `B2_ACCOUNT_KEY`. No values were printed or copied into evidence.
 
-```bash
-NEW_SERVER='root@<standalone-server>'
-ssh "$NEW_SERVER" 'mkdir -p /etc/projectd && chmod 700 /etc/projectd'
-scp -p /etc/projectd/backup.env "$NEW_SERVER:/etc/projectd/backup.env"
-ssh "$NEW_SERVER" 'chmod 600 /etc/projectd/backup.env'
-```
-
-If Contabo cannot connect directly to the new server over SSH, Jeslito should transfer the file through an agreed secure channel or write it directly on the new server.
-
-Check only its presence and permissions; do not print its contents:
+For a future transfer, Jeslito can use his standalone SSH account and copy the credentials to `/home/jeslito/restic.env` without posting them anywhere. A root administrator then installs and removes the temporary copy:
 
 ```bash
-ssh root@<standalone-server> 'stat -c "%a %n" /etc/projectd/backup.env'
+install -o root -g root -m 600 /home/jeslito/restic.env /etc/projectd/restic.env
+rm -f /home/jeslito/restic.env
 ```
 
-Expected output: `600 /etc/projectd/backup.env`.
+Check only presence, permissions and variable **names**, never values:
 
-## 6. Restore from B2 with timing — not yet performed
+```bash
+stat -c '%a %U:%G %n' /etc/projectd/backup.env /etc/projectd/restic.env
+grep -oE '^[A-Z_0-9]+=' /etc/projectd/restic.env
+```
+
+Expected mode for both files is `600`. The credentials must include a Restic repository, a password through an appropriate Restic variable, and the B2 account credentials required by the repository type.
+
+## 6. Restore from B2 with timing — file-only PASS; functional test open
 
 ```bash
 ssh "$NEW_SERVER"
 cd /root/projectd-setup
-bash ./03-restore-b2.sh /etc/projectd/backup.env
+bash ./03-restore-b2.sh /etc/projectd/restic.env
 ```
 
 By default, the script restores snapshot `latest` into the empty directory `/srv/projectd-restore`. To select another snapshot or target:
 
 ```bash
 RESTIC_SNAPSHOT_ID='SNAPSHOT_ID' RESTORE_TARGET='/srv/projectd-restore' \
-  bash ./03-restore-b2.sh /etc/projectd/backup.env
+  bash ./03-restore-b2.sh /etc/projectd/restic.env
 ```
 
-The result is written to `/root/projectd-evidence/restore-result.txt`, including exit code, start time, end time, elapsed seconds, and HH:MM:SS. The log does not print `backup.env` or the process environment.
+The result is written to `/root/projectd-evidence/restore-result.txt`, including exit code, start time, end time, elapsed seconds, and HH:MM:SS. The log does not print `restic.env` or the process environment.
+
+**Observed run, 25 November 2026:**
+
+| Item | Result |
+| --- | --- |
+| Snapshot | `982aa532`, `2026-11-24T21:00:23Z`, selected as `latest` |
+| Start / end (UTC) | `2026-11-25T18:28:47Z` / `2026-11-25T18:28:56Z` |
+| Timed `restic restore` | **9 seconds**, exit status `0` |
+| Restic summary | **514 files/dirs, 51.523 MiB** |
+| Disk verification | **400 regular files**, `du -sh` = **53M** |
+| Scope | Files restored to `/srv/projectd-restore`; no service stopped or started and no restored configuration activated |
+
+Evidence: [complete log](b2-file-restore-2026-11-25.log), [timing/result](b2-file-restore-result-2026-11-25.txt), and [restore record](../../tests/restore/restore-log.md).
 
 For Check-in 5, retain:
 
-- snapshot ID/date and repository size from `restic snapshots` / `restic stats`;
+- snapshot ID/date and repository size from `restic snapshots` / `restic stats` when available;
 - timing from `restore-result.txt`;
 - `du -sh /srv/projectd-restore`;
 - a screenshot or log showing successful completion;
 - separately measured download, service-start, and full-readiness times when available.
 
-`restic restore` alone proves file recovery, not a working application. Also test simulator → MQTT/TLS → Telegraf → InfluxDB → Grafana/dashboard. Record the result in `tests/restore/restore-log.md`; its empty template must not be presented as a completed restore.
+`restic restore` alone proves file recovery, not a working application. Also test simulator → MQTT/TLS → Telegraf → InfluxDB → Grafana/dashboard. `tests/restore/restore-log.md` now contains the observed file-only result and a separate, still-open full application acceptance checklist.
 
 ## 7. Start the restored configuration and services
+
+> **Only on a clean replacement server for Contabo.** On the standalone server, never install the restored `wg0.conf`: it
+> contains the production WireGuard server key and would replace the live standalone tunnel (all team peers lose access).
+> A functional drill on the standalone must start the restored Compose services under a separate project name, without
+> published ports and without WireGuard. The restored tree holds production secrets: keep it `root:root 700` and delete it
+> after the drill.
 
 If the restored file exists as `/srv/projectd-restore/etc/wireguard/wg0.conf`:
 
@@ -241,24 +260,34 @@ Production delay measurements through the real inter-host/VPN path remain open a
 
 | Item | Minimum evidence | Status |
 | --- | --- | --- |
-| Firewall | log, `ufw status`, second SSH session, rule test | Complete; 28/28, `firewall-netns-b0414de.txt` |
+| Firewall | log, `ufw status`, second SSH session, rule test | Host UFW hardening complete; updated per-peer policy **31/31** in isolated namespaces, `firewall-netns-qwerty-2026-11-25.txt`; revised rules not enabled live |
 | Updates | apt log, reboot, and new SSH session | Completed on 22 November |
 | Docker and stack | Compose status, health checks, 6/6 sensors | Complete; `redeploy-b0414de.txt` |
-| Repository tests | Ubuntu result without skips | 56/56; `offline-tests-linux-b0414de.txt` |
-| WireGuard | `wg show`, handshake, and ping through tunnel | Server and laptop profile ready; laptop handshake not confirmed |
-| B2 restore | exit code 0, snapshot, timing, functional test | **Not performed; `backup.env` unavailable** |
+| Repository tests | Ubuntu result without skips | Current `cacdbcb`: 58 unit + 18 restore-layout + 28 firewall-netns checks passed; compile, shell, JSON/YAML and Compose also passed (`ubuntu-regression-cacdbcb.log`). Updated qwerty policy separately passed 31/31 on 25 Nov. Earlier baseline: 56/56 |
+| WireGuard | `wg show`, handshake, and ping through tunnel | Server configured; qwerty handshake observed. Darek's old peer was replaced; laptop activation/handshake/ping not confirmed |
+| B2 restore | exit code 0, snapshot, timing, functional test | **File-only PASS 25 Nov:** exit 0, snapshot `982aa532`, 9 seconds, 514 files/dirs, 400 regular files verified. Functional application restore and full-readiness timing remain open |
 | Alert 2 — missing data | API log, alert, and recovery | Complete for a stopped simulator |
 | VPN interruption | interruption log, alert, new handshake | **Not performed** |
-| `delay_ms` | raw export, CSV, report, chart, and time window | Complete for the local standalone baseline |
+| `delay_ms` | raw export, CSV, report, chart, and time window | Complete for the local standalone baseline; Mati production path reported separately |
 | Dashboard and Grafana | screenshots/recording of the working system | Complete; screenshots and recordings under `browser/` |
+| Security remediation | running versions, health, reconnections, file modes, direct broker tests | Standalone verified at `cacdbcb`: Grafana 12.1.10, Mosquitto 2.0.23; client-ID spoof and 1 MB packet rejection passed (`broker-live-security-cacdbcb.log`); production not independently verified |
 
 ## 11. Dependencies and follow-up
 
-- Production MQTT broker fix: awaiting Jeslito's confirmation; publish `held-security` and its audit report only afterwards.
+- Production MQTT broker fix: Jeslito reported it deployed on 24 Nov. Direct production client-ID takeover and 1 MB negative tests are still recommended; the passed ACL test does not replace them.
 - Production Team Dashboard and optional B2 mirror: Jeslito.
 - Faculty WireGuard QR profiles: send only after confirming key compatibility; standalone uses new keys.
-- Team accounts: create after receiving public keys; do not grant everyone root/sudo/docker access.
+- Team accounts: provisioned on 24 Nov. Jeslito has VPN `.10`, Grafana Admin and SSH/sudo; qwerty_l3y has VPN `.12` and Grafana Editor, with a real handshake observed; Mykyta has VPN `.21` and Grafana Editor. Darek reported all three Grafana logins completed; all three password files were deleted on 25 Nov and a follow-up check found zero. Jeslito/Mykyta VPN handshakes remain unconfirmed; do not grant everyone root/sudo/docker access.
+- Darek's compromised laptop peer was revoked and a new public key enrolled on 24 Nov. The local profile requires administrator activation before handshake, ping or VPN-break testing.
 - Faculty access evidence requires a real VPN login/handshake and a successful read-only application session, not merely a generated QR profile.
 - Email alerts remain unverified on standalone because SMTP is disabled. If email notification is a minimum requirement, Jeslito must demonstrate it on production.
 - Contabo firewall and public Coolify/Supabase exposure are **reported risks requiring owner verification**, not findings independently verified in this session. Record the observed configuration and remediation in the security report.
 - Peer evaluation: document task assignments, deadlines, responses, and missing responses on Discord without speculating about motivation.
+
+## 12. Production and repository update — 24 November 2026
+
+- PR #3 was merged into `origin/main` as `a30a9d4`.
+- The broker fix, audit report, remediation update and matrix update were published on the fork's `szczecin-wol-vpn` branch in commits `0064e93`, `36bb841`, `27d2eb0` and `6d6bcd8`. These later commits were not in `origin/main` when checked.
+- Jeslito reported production Mosquitto 2.1.2 with `use_username_as_clientid true` and `max_packet_size 16384`; configuration validation, restart, Telegraf reconnection and Mati ingestion succeeded. The recorded negative test was an ACL denial.
+- Jeslito reported the first real Mati-path measurement: 66 readings (22 per sensor), mean 127.5–131.8 ms and p95 138.7–147.7 ms. This is MQTT reception delay including clock offset, not pure network latency. Add `mati_normal_2026-11-24.csv` before treating the result as a complete evidence package.
+- Szczecin real-path delay, both physical VPN interruption tests, the **functional application phase** of B2 restore, faculty sessions and email evidence remain open. The timed file-only B2 restore passed on 25 November.

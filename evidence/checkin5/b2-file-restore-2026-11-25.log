@@ -1,0 +1,24 @@
+START 2026-11-25T19:28:42+01:00 HOST <standalone-server> TARGET /srv/projectd-restore SNAPSHOT latest
+ID        Time                 Host        Tags                 Paths
+-----------------------------------------------------------------------------------------------
+7c9f248a  2026-11-19 20:13:42  vmi3667189  project-d,automated  /var/tmp/projectd-backup.2wETpd
+0fcd0d03  2026-11-19 22:00:17  vmi3667189  project-d,automated  /var/tmp/projectd-backup.wQfgPb
+73dc6a5f  2026-11-20 22:00:23  vmi3667189  project-d,automated  /var/tmp/projectd-backup.KIYc0k
+fdec246d  2026-11-21 22:00:20  vmi3667189  project-d,automated  /var/tmp/projectd-backup.N6kcfx
+8b5a9132  2026-11-22 22:00:32  vmi3667189  project-d,automated  /var/tmp/projectd-backup.gZlUpE
+9ce9f95f  2026-11-23 22:00:47  vmi3667189  project-d,automated  /var/tmp/projectd-backup.eB8LnO
+982aa532  2026-11-24 22:00:23  vmi3667189  project-d,automated  /var/tmp/projectd-backup.ujcdO1
+-----------------------------------------------------------------------------------------------
+7 snapshots
+restoring <Snapshot 982aa532 of [/var/tmp/projectd-backup.ujcdO1] at 2026-11-24 22:00:23.830846595 +0100 CET by root@vmi3667189> to /srv/projectd-restore
+Summary: Restored 514 files/dirs (51.523 MiB) in 0:03
+RESTORE_STATUS=0
+START=2026-11-25T19:28:47+01:00
+END=2026-11-25T19:28:56+01:00
+DURATION_SECONDS=9
+DURATION_HMS=00:00:09
+TARGET=/srv/projectd-restore
+SNAPSHOT=latest
+53M	/srv/projectd-restore
+Odtworzenie plików zakończone. Uruchomienie usług wykonaj według README projektu po sprawdzeniu konfiguracji.
+END 2026-11-25T19:28:56+01:00 LOG /root/projectd-evidence/03-restore-20261125T192842.log

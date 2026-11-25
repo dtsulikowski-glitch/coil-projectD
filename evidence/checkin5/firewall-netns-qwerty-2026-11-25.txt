@@ -1,0 +1,46 @@
+== Baseline: no Project D rules (everything reachable) ==
+PASS  unrestricted before the script (10.66.0.50 -> :8883 open)
+
+== Rules left by the previous script version (ACCEPTs at the top, DROP after RETURN) ==
+PASS  legacy DROP after RETURN is never reached (10.66.0.50 -> :8883 open)
+
+== Apply vpn/firewall/docker-user.sh twice (idempotence), ENABLE_PHASE7=0 ==
+PASS  legacy Project D rules removed from DOCKER-USER
+PASS  exactly one jump after two runs
+PASS  jump is evaluated before Docker's RETURN
+PASS  --check reports the installed policy as current
+PASS  Jeslito MQTT (10.66.0.10 -> :8883 open)
+PASS  qwerty MQTT (10.66.0.12 -> :8883 open)
+PASS  Mykyta MQTT (10.66.0.21 -> :8883 open)
+PASS  Darek MQTT (10.66.0.22 -> :8883 open)
+PASS  qwerty Grafana (10.66.0.12 -> :3000 open)
+PASS  qwerty team dashboard (10.66.0.12 -> :8088 open)
+PASS  member Grafana (10.66.0.21 -> :3000 open)
+PASS  faculty Grafana (10.66.0.31 -> :3000 open)
+PASS  faculty team dashboard (host 8088 -> container 9999) (10.66.0.31 -> :8088 open)
+PASS  host port 13000 closed although its container port 3000 is allowed (10.66.0.21 -> :13000 closed)
+PASS  faculty has no MQTT (10.66.0.31 -> :8883 closed)
+PASS  unknown peer MQTT (10.66.0.50 -> :8883 closed)
+PASS  unknown peer Grafana (10.66.0.50 -> :3000 closed)
+PASS  Phase 7 API closed while disabled (10.66.0.21 -> :8100 closed)
+PASS  Phase 7 monitor MQTT closed while disabled (10.66.0.16 -> :8883 closed)
+PASS  unlisted container port (10.66.0.21 -> :9999 closed)
+
+== ENABLE_PHASE7=1 ==
+PASS  Phase 7 monitor MQTT (10.66.0.16 -> :8883 open)
+PASS  Phase 7 member API (10.66.0.21 -> :8100 open)
+PASS  faculty has no Phase 7 API (10.66.0.31 -> :8100 closed)
+
+== Back to ENABLE_PHASE7=0 retracts Phase 7 ==
+PASS  Phase 7 monitor MQTT retracted (10.66.0.16 -> :8883 closed)
+PASS  Phase 7 member API retracted (10.66.0.21 -> :8100 closed)
+PASS  member MQTT still open (10.66.0.21 -> :8883 open)
+
+== Tampering is detected by --check ==
+PASS  --check detects an unreviewed rule
+PASS  re-applying removes the unreviewed rule (10.66.0.50 -> :8883 closed)
+
+== --remove rolls back ==
+PASS  unrestricted after --remove (10.66.0.50 -> :8883 open)
+
+Summary: 31 passed, 0 failed
