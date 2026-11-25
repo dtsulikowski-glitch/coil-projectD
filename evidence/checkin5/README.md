@@ -27,7 +27,7 @@ SMTP is disabled on the standalone server, so email delivery is **not** covered 
 
 | # | Task | Owner |
 | --- | --- | --- |
-| 1 | Team accounts are provisioned and Darek reports all three Grafana logins completed; password files were deleted 25 Nov. Mykyta's standalone VPN handshake was observed on 25 Nov; confirm that the remaining 12:57 CET handshake key belongs to Jeslito `.10` | Darek + team members |
+| 1 | Team accounts are provisioned and Darek reports all three Grafana logins completed; password files were deleted 25 Nov. Done 25 Nov: VPN handshakes observed for Jeslito `.10`, qwerty `.12` and Mykyta `.21` ([peer mapping](wg-peer-mapping-2026-11-25.txt)). Remaining: rotate Darek's laptop key after Check-in 5 | Darek + team members |
 | 2 | Complete the Mati-side physical VPN-drop test; add its raw evidence, the Mati delay CSV and production screenshots; run direct production client-ID and 1 MB negative tests | Jeslito |
 | 3 | Repeat the restore on a fresh VM without intervention. Reconcile the source Mosquitto `.env`/password hashes and investigate historical freshness at the backup boundary | Darek + Jeslito |
 | 4 | Final narration, deck updates and group video edit | qwerty_l3y + Jeslito |
