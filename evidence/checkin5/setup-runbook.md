@@ -17,11 +17,12 @@ Verified on the standalone server:
 - only SSH `22/tcp` and WireGuard `51820/udp` listen publicly; project services bind to `10.66.0.1` or loopback;
 - 56/56 Ubuntu unit tests passed, together with Python compilation, shell syntax checks, and `docker compose config -q`;
 - baseline isolated network-namespace firewall test: 28/28 passed;
-- updated per-peer firewall policy including qwerty `.12`: **31/31 passed on 25 November**, using only temporary network namespaces; the revised rules were **not enabled** on the live host;
-- Alert 2 for all three Szczecin sensors and recovery of all six alert instances to `Normal` passed; see section 8;
-- `delay_ms` analysis completed for 444 normal-operation samples and a separate recovery window; see section 9.
+- updated per-peer firewall policy including qwerty `.12`: **31/31 passed**, after which the same reviewed script was enabled live and `--check` confirmed the installed rules; MQTT TLS, Grafana and dashboard remained reachable through the laptop VPN;
+- Alert 2 for all three Szczecin sensors passed both for a stopped simulator and for a real 180-second laptop WireGuard interruption; Mati remained Normal; see section 8;
+- `delay_ms` analysis covers the local baseline and the real Szczecin laptop → WireGuard → standalone MQTT path; negative values are retained as clock diagnostics; see section 9;
+- isolated functional B2 restore passed with documented intervention: RTO 264 seconds, active functional phase 27 seconds, 3 dashboards, 2 alert rules and successful new ingestion. The source credential mismatch and historical-freshness limitation are recorded in section 6.
 
-The running standalone stack uses **new secrets and WireGuard keys** and an independent peer registry at `/root/projectd-profiles/peers.md`. A real production B2 snapshot was restored **to separate files only** on 25 November; no restored production configuration or service was activated. Do not use the production QR profiles as profiles for this server.
+The running standalone stack uses **new secrets and WireGuard keys** and an independent peer registry at `/root/projectd-profiles/peers.md`. A real production B2 snapshot was restored to separate files and then started only in an isolated Compose project with no published ports and no WireGuard activation. It was removed after the test; `/etc/wireguard` and the live stack were not replaced. Do not use the production QR profiles as profiles for this server.
 
 ## 1. Prerequisites
 
@@ -112,7 +113,7 @@ grep -oE '^[A-Z_0-9]+=' /etc/projectd/restic.env
 
 Expected mode for both files is `600`. The credentials must include a Restic repository, a password through an appropriate Restic variable, and the B2 account credentials required by the repository type.
 
-## 6. Restore from B2 with timing — file-only PASS; functional test open
+## 6. Restore from B2 with timing — file-only PASS; isolated functional PASS with intervention
 
 ```bash
 ssh "$NEW_SERVER"
@@ -150,17 +151,13 @@ For Check-in 5, retain:
 - a screenshot or log showing successful completion;
 - separately measured download, service-start, and full-readiness times when available.
 
-`restic restore` alone proves file recovery, not a working application. Also test simulator → MQTT/TLS → Telegraf → InfluxDB → Grafana/dashboard. `tests/restore/restore-log.md` now contains the observed file-only result and a separate, still-open full application acceptance checklist.
+`restic restore` alone proves file recovery, not a working application. The isolated functional drill on 25 November additionally verified InfluxDB, Grafana, Mosquitto and new ingestion. RTO from restic start to final check was **264 seconds**, including diagnosis between stages; the active functional phase was **27 seconds**. It was **not a no-intervention clean pass**: the restored `.env` did not match the restored Mosquitto hashes for the test sensor or Telegraf, so only an isolated password-file copy was realigned for the pipeline test. Historical observations were present for both cities, but their newest timestamps did not establish freshness at the 24 November 22:00 local backup boundary. See [the complete restore record](../../tests/restore/restore-log.md) and [functional evidence](functional-restore-2026-11-25/functional-result.txt). The fresh-VM/no-intervention protocol remains open.
 
-## 7. Start the restored configuration and services
+## 7. Start the restored configuration and services — fresh isolated VM only
 
-> **Only on a clean replacement server for Contabo.** On the standalone server, never install the restored `wg0.conf`: it
-> contains the production WireGuard server key and would replace the live standalone tunnel (all team peers lose access).
-> A functional drill on the standalone must start the restored Compose services under a separate project name, without
-> published ports and without WireGuard. The restored tree holds production secrets: keep it `root:root 700` and delete it
-> after the drill.
+> **WARNING — never run the WireGuard installation below on the current standalone server or another host with an active team VPN.** The restored `wg0.conf` contains Contabo's production server private key. Installing it into `/etc/wireguard/wg0.conf` would replace the standalone server's working key, invalidate its existing peer configuration and can cut off the whole team. The functional restore drill must use a separate Compose project name, **no published ports and no WireGuard activation**. The running standalone stack and `/etc/wireguard` must remain untouched.
 
-If the restored file exists as `/srv/projectd-restore/etc/wireguard/wg0.conf`:
+On a **fresh isolated VM with no active team VPN and no production data**, if the restored file exists as `/srv/projectd-restore/etc/wireguard/wg0.conf`, WireGuard can be installed deliberately:
 
 ```bash
 install -m 600 /srv/projectd-restore/etc/wireguard/wg0.conf /etc/wireguard/wg0.conf
@@ -168,7 +165,10 @@ systemctl enable --now wg-quick@wg0
 wg show wg0
 ```
 
-Locate the restored project directory and follow its deployment and backup READMEs. Do not blindly start every Compose file: inspect variables, volumes, ports, Compose project name, and network names first. Before changing a running Contabo stack, use read-only `deployment/contabo/reconcile_check.py`.
+> **Snapshots taken before 25 November 2026 contain Grafana 12.1.1** (CVE-2026-27876, CVE-2026-27880). After restoring such a
+> snapshot, set the Grafana image to 12.1.10 or a newer supported patched release before any VPN peer can reach it.
+
+For the standalone functional drill, leave `/etc/wireguard` unchanged and use the separate isolated-Compose procedure instead. Locate the restored project directory and follow its deployment and backup READMEs. Do not blindly start every Compose file: inspect variables, volumes, ports, Compose project name, and network names first. Before changing a running Contabo stack, use read-only `deployment/contabo/reconcile_check.py`.
 
 Minimum standalone validation:
 
@@ -181,6 +181,20 @@ curl -fsS http://127.0.0.1:13000/api/health
 curl -fsS http://127.0.0.1:18088/healthz
 systemctl is-active projectd-sim@mati projectd-sim@szczecin
 ```
+
+Simulator secrets require both file permission **and directory traversal**. On 25 November a restart failed because `/etc/projectd` was `700 root:root`, despite `szczecin.env` being `640 root:projectd-sim`. The remediated standalone state is:
+
+```bash
+chmod 711 /etc/projectd                 # traverse only; no directory listing for the service user
+chmod 755 /etc/projectd/sim
+chown root:projectd-sim /etc/projectd/sim/*.env
+chmod 640 /etc/projectd/sim/*.env
+chmod 600 /etc/projectd/backup.env /etc/projectd/restic.env
+runuser -u projectd-sim -- test -r /etc/projectd/sim/szczecin.env
+systemctl restart projectd-sim@szczecin
+```
+
+Both simulators subsequently remained `active`, Grafana stayed healthy, and the B2 credential files remained `600 root:root`. Do not make the parent directory world-readable or relax secret-file modes to solve traversal errors.
 
 ## 8. Alert 2 and missing data
 
@@ -213,18 +227,22 @@ Visual evidence from the recorded test:
 
 SMTP is disabled, so **email delivery was not tested**. This test demonstrates Grafana and dashboard reactions to missing data; it does not replace a physical WireGuard interruption and subsequent handshake.
 
-### Physical VPN interruption — still to be performed
+### Physical VPN interruption — Szczecin completed 25 November 2026
 
-Use an agreed maintenance window and an access path that will not be cut off:
+The server-side Szczecin simulator was stopped at `19:51:25Z`; Mati remained active. One uninterrupted laptop process published 30 rounds per sensor through `10.66.0.1:8883`. After more than five minutes of healthy baseline, the administrator script stopped `WireGuardTunnel$darek-laptop` at `20:00:07.058Z` and restored it at `20:03:07.358Z` (**180.299 s**).
 
-```bash
-cd /root/projectd-setup
-bash ./04-vpn-break-test.sh wg0
-```
+| Check | Observed result |
+| --- | --- |
+| Offline queue | 6 `queued_offline` readings per sensor; zero `queue_overflow`; no process restart |
+| Alert 2 | All three Szczecin instances `Alerting` at `20:02:24.702Z`; all Mati instances remained `Normal` |
+| Recovery | All three Szczecin instances `Normal` at `20:03:54.804Z`; `publish_resumed` and `pending=0` observed |
+| Final simulator state | Natural `stop` at `20:06:23.127Z`; `last_seq=29` and `unacknowledged=0` for every sensor |
+| InfluxDB sequence check | 30 rows per sensor in one laptop run; zero gaps, resets, duplicates or out-of-order events detected by `check_seq.py --strict` |
+| Restoration | Server-side Szczecin started only after the laptop process ended; fresh WireGuard handshake recorded; final services stable after the directory-traversal fix in section 7 |
 
-By default, VPN is disabled for `120 + 30` seconds and then restored automatically. A trap also restores VPN if the script is interrupted. Retain the log, `vpn-test-result.txt`, Alert 2 evidence, a fresh handshake, and a post-recovery connectivity test.
+Evidence: [combined verification](vpn-break-szczecin-2026-11-25/log-alert-verification.json), [raw simulator log](vpn-break-szczecin-2026-11-25/vpn-break-laptop.jsonl), [alert transitions](vpn-break-szczecin-2026-11-25/alert-transitions.jsonl), [strict sequence analysis](vpn-break-szczecin-2026-11-25/sequence-analysis.json), [restoration and handshakes](vpn-break-szczecin-2026-11-25/server-simulator-restore-and-handshakes.log) and [final stable health](vpn-break-szczecin-2026-11-25/final-stable-health.log).
 
-The Szczecin-side laptop procedure additionally requires stopping the server-side Szczecin simulator before starting the laptop instance. The laptop simulator must remain one uninterrupted process throughout baseline, interruption, and queue drain: its queue is **memory-only**, and restarting the process discards queued readings. Mati remains active as the control.
+Absence of duplicates in InfluxDB does not prove that QoS 1 produced no duplicate before storage. The Mati-side physical interruption remains a separate Jeslito action. For a future server-side retest, use an agreed maintenance window and `04-vpn-break-test.sh wg0`; do not substitute that script for the completed laptop procedure above.
 
 ## 9. `delay_ms` analysis — completed
 
@@ -254,21 +272,31 @@ The recovery window is short. Szczecin p95 equals the maximum with five samples 
 
 Evidence: `delay-normal.raw.csv`, `delay-normal.csv`, `delay-normal.md`, `delay-normal-chart.png`, corresponding `delay-recovery.*` files, and `delay-analysis-run.txt`.
 
-Production delay measurements through the real inter-host/VPN path remain open and must not be inferred from this local baseline.
+### Real Szczecin laptop → WireGuard → standalone path — 25 November
+
+The VPN-break window supplied 90 matched `delay_ms` and sequence points, all joined back to the single laptop process. Points were classified by simulator events, not by Influx arrival time:
+
+| Window | Samples | Median | p95 | Range / caution |
+| --- | ---: | ---: | ---: | --- |
+| Pre-break normal operation | 51 | **−61.872 ms** | **358.501 ms** | −85.537 to 591.929 ms; 48/51 negative |
+| Queued during the 180-second break | 18 | **100.524 s** | **175.537 s** | 25.511–175.537 s; expected recovery delay, not normal latency |
+| New readings after tunnel restoration | 21 | **−71.085 ms** | **−65.921 ms** | One reconnect spike of 2.717 s; 20/21 negative |
+
+These values are Telegraf processing time minus source timestamps, not ping. Negative values are retained rather than hidden or clamped. Independent NTP checks recorded offsets, but the persistent negative baseline means this metric also diagnoses clock/timestamp behaviour and must not be quoted as pure network latency. Evidence: [baseline](vpn-break-szczecin-2026-11-25/delay-baseline.md), [queued](vpn-break-szczecin-2026-11-25/delay-queued.md), [post-recovery](vpn-break-szczecin-2026-11-25/delay-post-recovery-new.md), [raw export](vpn-break-szczecin-2026-11-25/influx-delay-laptop.csv) and [clock check](vpn-break-szczecin-2026-11-25/final-server-health-and-clock.log). Mati's production-path result remains a separate Jeslito measurement.
 
 ## 10. Evidence and definition of done
 
 | Item | Minimum evidence | Status |
 | --- | --- | --- |
-| Firewall | log, `ufw status`, second SSH session, rule test | Host UFW hardening complete; updated per-peer policy **31/31** in isolated namespaces, `firewall-netns-qwerty-2026-11-25.txt`; revised rules not enabled live |
+| Firewall | log, `ufw status`, second SSH session, rule test | **Live policy enabled and matched `--check`; 31/31 isolated tests passed.** Post-enable VPN connectivity to MQTT, Grafana and dashboard was verified. |
 | Updates | apt log, reboot, and new SSH session | Completed on 22 November |
-| Docker and stack | Compose status, health checks, 6/6 sensors | Complete; `redeploy-b0414de.txt` |
+| Docker and stack | Compose status, health checks, 6/6 sensors | Complete; `redeploy-b0414de.txt`; final post-test health also recorded |
 | Repository tests | Ubuntu result without skips | Current `cacdbcb`: 58 unit + 18 restore-layout + 28 firewall-netns checks passed; compile, shell, JSON/YAML and Compose also passed (`ubuntu-regression-cacdbcb.log`). Updated qwerty policy separately passed 31/31 on 25 Nov. Earlier baseline: 56/56 |
-| WireGuard | `wg show`, handshake, and ping through tunnel | Server configured; qwerty handshake observed. Darek's old peer was replaced; laptop activation/handshake/ping not confirmed |
-| B2 restore | exit code 0, snapshot, timing, functional test | **File-only PASS 25 Nov:** exit 0, snapshot `982aa532`, 9 seconds, 514 files/dirs, 400 regular files verified. Functional application restore and full-readiness timing remain open |
-| Alert 2 — missing data | API log, alert, and recovery | Complete for a stopped simulator |
-| VPN interruption | interruption log, alert, new handshake | **Not performed** |
-| `delay_ms` | raw export, CSV, report, chart, and time window | Complete for the local standalone baseline; Mati production path reported separately |
+| WireGuard | `wg show`, handshake, and application connectivity | **Darek's laptop activated; real MQTT TLS path, interruption, recovery and fresh handshake verified.** qwerty handshake also observed. |
+| B2 restore | exit code 0, snapshot, timing, functional test | **Isolated functional PASS with intervention:** RTO 264 s, active phase 27 s, new ingestion verified. Fresh-VM/no-intervention retest and source credential/history follow-up remain open. |
+| Alert 2 — missing data | API log, alert, and recovery | Complete for a stopped simulator and for the physical Szczecin laptop VPN interruption |
+| VPN interruption | interruption log, alert, new handshake | **Szczecin PASS 25 Nov:** 180.299 s break, 3 Alert 2, queue drain, 30 sequential InfluxDB rows/sensor. Mati side remains open. |
+| `delay_ms` | raw export, CSV, report, chart, and time window | Local baseline and real Szczecin VPN path complete; negative clock-diagnostic values retained. Mati production path reported separately |
 | Dashboard and Grafana | screenshots/recording of the working system | Complete; screenshots and recordings under `browser/` |
 | Security remediation | running versions, health, reconnections, file modes, direct broker tests | Standalone verified at `cacdbcb`: Grafana 12.1.10, Mosquitto 2.0.23; client-ID spoof and 1 MB packet rejection passed (`broker-live-security-cacdbcb.log`); production not independently verified |
 
@@ -278,7 +306,7 @@ Production delay measurements through the real inter-host/VPN path remain open a
 - Production Team Dashboard and optional B2 mirror: Jeslito.
 - Faculty WireGuard QR profiles: send only after confirming key compatibility; standalone uses new keys.
 - Team accounts: provisioned on 24 Nov. Jeslito has VPN `.10`, Grafana Admin and SSH/sudo; qwerty_l3y has VPN `.12` and Grafana Editor, with a real handshake observed; Mykyta has VPN `.21` and Grafana Editor. Darek reported all three Grafana logins completed; all three password files were deleted on 25 Nov and a follow-up check found zero. Jeslito/Mykyta VPN handshakes remain unconfirmed; do not grant everyone root/sudo/docker access.
-- Darek's compromised laptop peer was revoked and a new public key enrolled on 24 Nov. The local profile requires administrator activation before handshake, ping or VPN-break testing.
+- Darek's compromised laptop peer was revoked and a new public key enrolled on 24 Nov. Activation, MQTT connectivity, physical interruption, recovery and a fresh handshake were subsequently verified on 25 Nov.
 - Faculty access evidence requires a real VPN login/handshake and a successful read-only application session, not merely a generated QR profile.
 - Email alerts remain unverified on standalone because SMTP is disabled. If email notification is a minimum requirement, Jeslito must demonstrate it on production.
 - Contabo firewall and public Coolify/Supabase exposure are **reported risks requiring owner verification**, not findings independently verified in this session. Record the observed configuration and remediation in the security report.
@@ -290,4 +318,4 @@ Production delay measurements through the real inter-host/VPN path remain open a
 - The broker fix, audit report, remediation update and matrix update were published on the fork's `szczecin-wol-vpn` branch in commits `0064e93`, `36bb841`, `27d2eb0` and `6d6bcd8`. These later commits were not in `origin/main` when checked.
 - Jeslito reported production Mosquitto 2.1.2 with `use_username_as_clientid true` and `max_packet_size 16384`; configuration validation, restart, Telegraf reconnection and Mati ingestion succeeded. The recorded negative test was an ACL denial.
 - Jeslito reported the first real Mati-path measurement: 66 readings (22 per sensor), mean 127.5–131.8 ms and p95 138.7–147.7 ms. This is MQTT reception delay including clock offset, not pure network latency. Add `mati_normal_2026-11-24.csv` before treating the result as a complete evidence package.
-- Szczecin real-path delay, both physical VPN interruption tests, the **functional application phase** of B2 restore, faculty sessions and email evidence remain open. The timed file-only B2 restore passed on 25 November.
+- On 25 November the Szczecin real-path delay and physical VPN interruption were completed, and the isolated functional application restore passed with documented intervention. Still open: Mati-side physical interruption, faculty sessions, email evidence, a fresh-VM/no-intervention restore retest, reconciliation of the source Mosquitto `.env`/password hashes, and investigation of historical freshness at the backup boundary.
