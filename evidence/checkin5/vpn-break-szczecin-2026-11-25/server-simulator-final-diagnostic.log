@@ -1,0 +1,40 @@
+activating
+NRestarts=29
+ExecMainStatus=1
+ActiveState=activating
+SubState=auto-restart
+Nov 25 21:12:13 <standalone-server> python[890794]:              ^^^^^^
+Nov 25 21:12:13 <standalone-server> python[890794]:   File "/opt/coil-projectD/simulators/projectd_simulator.py", line 495, in main
+Nov 25 21:12:13 <standalone-server> python[890794]:     load_secrets_file(args.secrets_file)
+Nov 25 21:12:13 <standalone-server> python[890794]:   File "/opt/coil-projectD/simulators/projectd_simulator.py", line 219, in load_secrets_file
+Nov 25 21:12:13 <standalone-server> python[890794]:     for raw in path.read_text(encoding="utf-8").splitlines():
+Nov 25 21:12:13 <standalone-server> python[890794]:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 25 21:12:13 <standalone-server> python[890794]:   File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+Nov 25 21:12:13 <standalone-server> python[890794]:     with self.open(mode='r', encoding=encoding, errors=errors) as f:
+Nov 25 21:12:13 <standalone-server> python[890794]:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 25 21:12:13 <standalone-server> python[890794]:   File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+Nov 25 21:12:13 <standalone-server> python[890794]:     return io.open(self, mode, buffering, encoding, errors, newline)
+Nov 25 21:12:13 <standalone-server> python[890794]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 25 21:12:13 <standalone-server> python[890794]: PermissionError: [Errno 13] Permission denied: '/etc/projectd/sim/szczecin.env'
+Nov 25 21:12:13 <standalone-server> systemd[1]: projectd-sim@szczecin.service: Main process exited, code=exited, status=1/FAILURE
+Nov 25 21:12:13 <standalone-server> systemd[1]: projectd-sim@szczecin.service: Failed with result 'exit-code'.
+Nov 25 21:12:23 <standalone-server> systemd[1]: projectd-sim@szczecin.service: Scheduled restart job, restart counter is at 29.
+Nov 25 21:12:23 <standalone-server> systemd[1]: Started projectd-sim@szczecin.service - Project D sensor simulator (szczecin).
+Nov 25 21:12:23 <standalone-server> python[890907]: Traceback (most recent call last):
+Nov 25 21:12:23 <standalone-server> python[890907]:   File "/opt/coil-projectD/simulators/projectd_simulator.py", line 508, in <module>
+Nov 25 21:12:23 <standalone-server> python[890907]:     sys.exit(main())
+Nov 25 21:12:23 <standalone-server> python[890907]:              ^^^^^^
+Nov 25 21:12:23 <standalone-server> python[890907]:   File "/opt/coil-projectD/simulators/projectd_simulator.py", line 495, in main
+Nov 25 21:12:23 <standalone-server> python[890907]:     load_secrets_file(args.secrets_file)
+Nov 25 21:12:23 <standalone-server> python[890907]:   File "/opt/coil-projectD/simulators/projectd_simulator.py", line 219, in load_secrets_file
+Nov 25 21:12:23 <standalone-server> python[890907]:     for raw in path.read_text(encoding="utf-8").splitlines():
+Nov 25 21:12:23 <standalone-server> python[890907]:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 25 21:12:23 <standalone-server> python[890907]:   File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+Nov 25 21:12:23 <standalone-server> python[890907]:     with self.open(mode='r', encoding=encoding, errors=errors) as f:
+Nov 25 21:12:23 <standalone-server> python[890907]:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 25 21:12:23 <standalone-server> python[890907]:   File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+Nov 25 21:12:23 <standalone-server> python[890907]:     return io.open(self, mode, buffering, encoding, errors, newline)
+Nov 25 21:12:23 <standalone-server> python[890907]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 25 21:12:23 <standalone-server> python[890907]: PermissionError: [Errno 13] Permission denied: '/etc/projectd/sim/szczecin.env'
+Nov 25 21:12:23 <standalone-server> systemd[1]: projectd-sim@szczecin.service: Main process exited, code=exited, status=1/FAILURE
+Nov 25 21:12:23 <standalone-server> systemd[1]: projectd-sim@szczecin.service: Failed with result 'exit-code'.

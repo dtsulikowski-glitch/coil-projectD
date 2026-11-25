@@ -1,0 +1,19 @@
+[
+  {
+    "sensor_id": "SZCZ-AIR-01",
+    "run_id": "laptop-vpn-break-20261125T195152Z",
+    "input_rows": 30
+  },
+  {
+    "sensor_id": "SZCZ-HUM-01",
+    "run_id": "laptop-vpn-break-20261125T195152Z",
+    "input_rows": 30
+  },
+  {
+    "sensor_id": "SZCZ-TEMP-01",
+    "run_id": "laptop-vpn-break-20261125T195152Z",
+    "input_rows": 30
+  }
+]
+Events: 0; excluded rows: 0
+Wrote audit-2026-11-24\vpn-break-szczecin-2026-11-25\sequence-analysis.json

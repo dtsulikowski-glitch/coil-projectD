@@ -1,0 +1,10 @@
+Wrote audit-2026-11-24\vpn-break-szczecin-2026-11-25\delay-baseline.csv and audit-2026-11-24\vpn-break-szczecin-2026-11-25\delay-baseline.md
+Wrote audit-2026-11-24\vpn-break-szczecin-2026-11-25\delay-queued.csv and audit-2026-11-24\vpn-break-szczecin-2026-11-25\delay-queued.md
+Wrote audit-2026-11-24\vpn-break-szczecin-2026-11-25\delay-post-recovery-new.csv and audit-2026-11-24\vpn-break-szczecin-2026-11-25\delay-post-recovery-new.md
+Wrote audit-2026-11-24\vpn-break-szczecin-2026-11-25\delay-recovery.csv and audit-2026-11-24\vpn-break-szczecin-2026-11-25\delay-recovery.md
+Wrote audit-2026-11-24\vpn-break-szczecin-2026-11-25\delay-full.csv and audit-2026-11-24\vpn-break-szczecin-2026-11-25\delay-full.md
+baseline: n=51 median=-61.872 ms p95=358.501 ms min=-85.537 ms max=591.929 ms
+queued: n=18 median=100523.722 ms p95=175537.040 ms min=25511.332 ms max=175537.040 ms
+post-recovery-new: n=21 median=-71.085 ms p95=-65.921 ms min=-90.103 ms max=2717.058 ms
+recovery: n=39 median=-65.921 ms p95=175534.164 ms min=-90.103 ms max=175537.040 ms
+full: n=90 median=-62.436 ms p95=145522.229 ms min=-90.103 ms max=175537.040 ms

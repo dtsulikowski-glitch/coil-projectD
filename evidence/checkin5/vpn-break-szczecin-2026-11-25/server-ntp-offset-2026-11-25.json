@@ -1,0 +1,8 @@
+{
+  "ntp_server": "time.windows.com",
+  "local_start_utc": "2026-11-25T19:49:41.734852+00:00",
+  "local_end_utc": "2026-11-25T19:49:41.761938+00:00",
+  "round_trip_seconds": 0.027086,
+  "local_minus_ntp_seconds": 0.004469,
+  "note": "Independent NTP offset check; does not modify the system clock."
+}

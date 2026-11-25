@@ -1,0 +1,11 @@
+711 root:root /etc/projectd
+640 root:projectd-sim /etc/projectd/sim/szczecin.env
+600 root:root /etc/projectd/backup.env
+600 root:root /etc/projectd/restic.env
+SIM_SECRETS_READABLE=yes
+SZCZECIN=active
+MATI=active
+NRestarts=35
+ExecMainStatus=0
+ActiveState=active
+SubState=running

@@ -1,0 +1,17 @@
+{
+  "ntp_server": "time.windows.com",
+  "local_start_utc": "2026-11-25T20:11:59.461143+00:00",
+  "local_end_utc": "2026-11-25T20:11:59.487550+00:00",
+  "round_trip_seconds": 0.026407,
+  "local_minus_ntp_seconds": -0.000584,
+  "note": "Independent NTP offset check; does not modify the system clock."
+}
+{
+  "database": "ok",
+  "version": "12.1.10",
+  "commit": "619bd51f27dc73c6ccfa4442cd5d05addaa70ed9"
+}
+active
+activating
+RESTORE_DIRECTORY_REMOVED=yes
+ISOLATED_CONTAINERS=0

@@ -1,0 +1,27 @@
+# /etc/systemd/system/projectd-sim@.service
+[Unit]
+Description=Project D sensor simulator (%i)
+After=docker.service wg-quick@wg0.service
+Wants=wg-quick@wg0.service
+
+[Service]
+User=projectd-sim
+Group=projectd-sim
+WorkingDirectory=/var/lib/projectd-sim/%i
+ExecStart=/opt/projectd-sim/venv/bin/python /opt/coil-projectD/simulators/projectd_simulator.py --config /etc/projectd/sim/%i.yaml --secrets-file /etc/projectd/sim/%i.env --quiet
+Restart=always
+RestartSec=10
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/projectd-sim/%i
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+f: /etc/projectd/sim/szczecin.env
+drwxr-xr-x root root         /
+drwxr-xr-x root root         etc
+drwx------ root root         projectd
+drwxr-xr-x root root         sim
+-rw-r----- root projectd-sim szczecin.env

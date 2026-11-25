@@ -1,0 +1,124 @@
+== Safety prechecks ==
+Restore root before enforcement: 700 root:root /srv/projectd-restore
+Restore root enforced: 700 root:root /srv/projectd-restore
+{
+  "database": "ok",
+  "version": "12.1.10",
+  "commit": "619bd51f27dc73c6ccfa4442cd5d05addaa70ed9"
+}
+active
+active
+Using restored Compose project source: var/tmp/projectd-backup.ujcdO1/extra/opt/COIL_Checkin2_Contabo_Starter/compose.yaml
+<stdin>:1: DeprecationWarning: 'crypt' is deprecated and slated for removal in Python 3.13
+SOURCE_CREDENTIAL_CHECK SZCZ-TEMP-01: password_match=False
+SOURCE_CREDENTIAL_CHECK telegraf: password_match=False
+NOTE: isolated passwd copy realigned with restored .env; restored source was not modified
+PASS: Compose project=projectd-restore-drill; published ports=0; isolated passwd override=exclusive
+== Restore InfluxDB native backup ==
+ Network coil-checkin2-net Creating 
+ Volume projectd-restore-drill_influx-config Creating 
+ Volume projectd-restore-drill_influx-data Creating 
+ Volume projectd-restore-drill_influx-config Created 
+ Volume projectd-restore-drill_influx-data Created 
+ Network coil-checkin2-net Created 
+ Container projectd-restore-drill-influxdb-1 Creating 
+ Container projectd-restore-drill-influxdb-1 Created 
+ Container projectd-restore-drill-influxdb-1 Starting 
+ Container projectd-restore-drill-influxdb-1 Started 
+OK
+ projectd-restore-drill-influxdb-1 Copying /srv/projectd-restore/var/tmp/projectd-backup.ujcdO1/influxdb/. to projectd-restore-drill-influxdb-1:/tmp/projectd-influx-restore/
+ projectd-restore-drill-influxdb-1 Copied /srv/projectd-restore/var/tmp/projectd-backup.ujcdO1/influxdb/. to projectd-restore-drill-influxdb-1:/tmp/projectd-influx-restore/
+2026/11/25 19:49:27 INFO: Restoring KV snapshot
+2026/11/25 19:49:27 INFO: Restoring SQL snapshot
+2026/11/25 19:49:27 INFO: Restoring TSM snapshot for shard 1
+2026/11/25 19:49:27 INFO: Restoring TSM snapshot for shard 2
+2026/11/25 19:49:27 INFO: Restoring TSM snapshot for shard 3
+2026/11/25 19:49:27 INFO: Restoring TSM snapshot for shard 4
+2026/11/25 19:49:27 INFO: Restoring TSM snapshot for shard 5
+2026/11/25 19:49:27 INFO: Restoring TSM snapshot for shard 6
+2026/11/25 19:49:27 INFO: Restoring TSM snapshot for shard 7
+2026/11/25 19:49:27 INFO: Restoring TSM snapshot for shard 8
+2026/11/25 19:49:27 INFO: Restoring TSM snapshot for shard 9
+2026/11/25 19:49:27 INFO: Restoring TSM snapshot for shard 10
+2026/11/25 19:49:27 INFO: Restoring TSM snapshot for shard 11
+2026/11/25 19:49:28 INFO: Restoring TSM snapshot for shard 12
+2026/11/25 19:49:28 INFO: Restoring TSM snapshot for shard 13
+2026/11/25 19:49:28 INFO: Restoring TSM snapshot for shard 14
+2026/11/25 19:49:28 INFO: Restoring TSM snapshot for shard 15
+2026/11/25 19:49:28 INFO: Restoring TSM snapshot for shard 19
+== Restore Grafana and Mosquitto volumes ==
+ Volume projectd-restore-drill_grafana-data Creating 
+ Volume projectd-restore-drill_grafana-data Created 
+ Container projectd-restore-drill-grafana-run-01c12817619f Creating 
+ Container projectd-restore-drill-grafana-run-01c12817619f Created 
+ Volume projectd-restore-drill_mosquitto-data Creating 
+ Volume projectd-restore-drill_mosquitto-data Created 
+ Container projectd-restore-drill-mosquitto-run-a2532357d7af Creating 
+ Container projectd-restore-drill-mosquitto-run-a2532357d7af Created 
+== Start isolated services (no WireGuard, no published ports) ==
+ Container projectd-restore-drill-influxdb-1 Running 
+ Container projectd-restore-drill-grafana-1 Creating 
+ Container projectd-restore-drill-mosquitto-1 Creating 
+ Container projectd-restore-drill-grafana-1 Created 
+ Container projectd-restore-drill-mosquitto-1 Created 
+ Container projectd-restore-drill-telegraf-1 Creating 
+ Container projectd-restore-drill-telegraf-1 Created 
+ Container projectd-restore-drill-grafana-1 Starting 
+ Container projectd-restore-drill-mosquitto-1 Starting 
+ Container projectd-restore-drill-grafana-1 Started 
+ Container projectd-restore-drill-mosquitto-1 Started 
+ Container projectd-restore-drill-telegraf-1 Starting 
+ Container projectd-restore-drill-telegraf-1 Started 
+OK
+{
+  "database": "ok",
+  "version": "12.1.1",
+  "commit": "df5de8219b41d1e639e003bf5f3a85913761d167"
+}
+PASS: available historical Mati newest=2026-11-24T18:00:48.552000+00:00
+NOTE: Mati history does not establish sensor freshness at the 21:00:23Z backup boundary
+PASS: available historical Szczecin newest=2026-11-24T14:39:23.882000+00:00
+NOTE: Szczecin history does not establish sensor freshness at the 21:00:23Z backup boundary
+== Grafana dashboard and alert-rule inventory ==
+PASS: restored Grafana database dashboards=3 alert_rules=2
+== New reading: sensor -> MQTT TLS -> Telegraf -> InfluxDB ==
+ Container projectd-restore-drill-mosquitto-run-c3dbbde0c8cc Creating 
+ Container projectd-restore-drill-mosquitto-run-c3dbbde0c8cc Created 
+PASS: new reading reached InfluxDB at 2026-11-25T19:49:48.258Z through the isolated MQTT/Telegraf path
+PASS: all functional checks passed. RTO from original restic start: 264 seconds; active drill time is recorded separately.
+== Cleanup: isolated Compose project and restored secrets ==
+ Container projectd-restore-drill-telegraf-1 Stopping 
+ Container projectd-restore-drill-grafana-1 Stopping 
+ Container projectd-restore-drill-telegraf-1 Stopped 
+ Container projectd-restore-drill-telegraf-1 Removing 
+ Container projectd-restore-drill-grafana-1 Stopped 
+ Container projectd-restore-drill-grafana-1 Removing 
+ Container projectd-restore-drill-telegraf-1 Removed 
+ Container projectd-restore-drill-mosquitto-1 Stopping 
+ Container projectd-restore-drill-grafana-1 Removed 
+ Container projectd-restore-drill-influxdb-1 Stopping 
+ Container projectd-restore-drill-mosquitto-1 Stopped 
+ Container projectd-restore-drill-mosquitto-1 Removing 
+ Container projectd-restore-drill-influxdb-1 Stopped 
+ Container projectd-restore-drill-influxdb-1 Removing 
+ Container projectd-restore-drill-mosquitto-1 Removed 
+ Container projectd-restore-drill-influxdb-1 Removed 
+ Volume projectd-restore-drill_grafana-data Removing 
+ Volume projectd-restore-drill_mosquitto-data Removing 
+ Volume projectd-restore-drill_influx-data Removing 
+ Volume projectd-restore-drill_influx-config Removing 
+ Network coil-checkin2-net Removing 
+ Volume projectd-restore-drill_mosquitto-data Removed 
+ Volume projectd-restore-drill_grafana-data Removed 
+ Volume projectd-restore-drill_influx-data Removed 
+ Volume projectd-restore-drill_influx-config Removed 
+ Network coil-checkin2-net Removed 
+== Live stack post-check ==
+{
+  "database": "ok",
+  "version": "12.1.10",
+  "commit": "619bd51f27dc73c6ccfa4442cd5d05addaa70ed9"
+}
+active
+active
+FUNCTIONAL_RESULT=PASS EVIDENCE=/root/projectd-evidence/functional-20261125T194924Z

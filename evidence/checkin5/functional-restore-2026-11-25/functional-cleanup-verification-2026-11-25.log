@@ -1,0 +1,11 @@
+RESTORE_DIRECTORY_REMOVED=yes
+ISOLATED_CONTAINERS=0
+ISOLATED_VOLUMES=0
+WIREGUARD_INTERFACES=wg0
+active
+active
+{
+  "database": "ok",
+  "version": "12.1.10",
+  "commit": "619bd51f27dc73c6ccfa4442cd5d05addaa70ed9"
+}

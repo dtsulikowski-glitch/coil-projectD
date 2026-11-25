@@ -1,0 +1,20 @@
+{"time_utc":"2026-11-25T19:51:52.660Z","event":"start","city":"Szczecin","sensors":["SZCZ-TEMP-01","SZCZ-HUM-01","SZCZ-AIR-01"],"broker":"10.66.0.1:8883","interval_seconds":30.0,"interval_overridden":false,"queue_limit":2000,"queue_persistence":"memory-only (lost on process restart)","anomaly":[],"silence":[],"dry_run":false}
+{"time_utc":"2026-11-25T19:51:53.173Z","event":"connected","sensor_id":"SZCZ-AIR-01","session_present":true,"pending":1}
+{"time_utc":"2026-11-25T19:51:53.215Z","event":"connected","sensor_id":"SZCZ-HUM-01","session_present":true,"pending":1}
+{"time_utc":"2026-11-25T19:51:53.255Z","event":"publish_resumed","sensor_id":"SZCZ-AIR-01","pending":0}
+{"time_utc":"2026-11-25T19:51:53.291Z","event":"publish_resumed","sensor_id":"SZCZ-HUM-01","pending":0}
+{"time_utc":"2026-11-25T19:51:53.366Z","event":"connected","sensor_id":"SZCZ-TEMP-01","session_present":true,"pending":1}
+{"time_utc":"2026-11-25T19:51:53.478Z","event":"publish_resumed","sensor_id":"SZCZ-TEMP-01","pending":0}
+{"time_utc":"2026-11-25T20:00:07.083Z","event":"disconnected","sensor_id":"SZCZ-HUM-01","reason":"Unspecified error","pending":0}
+{"time_utc":"2026-11-25T20:00:07.083Z","event":"disconnected","sensor_id":"SZCZ-TEMP-01","reason":"Unspecified error","pending":0}
+{"time_utc":"2026-11-25T20:00:07.084Z","event":"disconnected","sensor_id":"SZCZ-AIR-01","reason":"Unspecified error","pending":0}
+{"time_utc":"2026-11-25T20:03:18.381Z","event":"connected","sensor_id":"SZCZ-TEMP-01","session_present":true,"pending":6}
+{"time_utc":"2026-11-25T20:03:18.382Z","event":"connected","sensor_id":"SZCZ-HUM-01","session_present":true,"pending":6}
+{"time_utc":"2026-11-25T20:03:18.382Z","event":"connected","sensor_id":"SZCZ-AIR-01","session_present":true,"pending":6}
+{"time_utc":"2026-11-25T20:03:18.507Z","event":"publish_resumed","sensor_id":"SZCZ-TEMP-01","pending":5}
+{"time_utc":"2026-11-25T20:03:18.508Z","event":"publish_resumed","sensor_id":"SZCZ-HUM-01","pending":5}
+{"time_utc":"2026-11-25T20:03:18.515Z","event":"publish_resumed","sensor_id":"SZCZ-AIR-01","pending":5}
+{"time_utc":"2026-11-25T20:06:23.022Z","event":"disconnected","sensor_id":"SZCZ-TEMP-01","reason":"Normal disconnection","pending":0}
+{"time_utc":"2026-11-25T20:06:23.086Z","event":"disconnected","sensor_id":"SZCZ-HUM-01","reason":"Normal disconnection","pending":0}
+{"time_utc":"2026-11-25T20:06:23.126Z","event":"disconnected","sensor_id":"SZCZ-AIR-01","reason":"Normal disconnection","pending":0}
+{"time_utc":"2026-11-25T20:06:23.127Z","event":"stop","unacknowledged":{"SZCZ-TEMP-01":0,"SZCZ-HUM-01":0,"SZCZ-AIR-01":0},"last_seq":{"SZCZ-TEMP-01":29,"SZCZ-HUM-01":29,"SZCZ-AIR-01":29}}

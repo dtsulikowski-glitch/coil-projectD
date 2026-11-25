@@ -1,0 +1,5 @@
+TEMP_KEY_ENTRIES_BEFORE=1
+TEMP_KEY_ENTRIES_AFTER=0
+REVOKED_LOGIN_EXIT=255
+root@<standalone-server>: Permission denied (publickey).
+LOCAL_TEMP_SECRETS_REMOVED=yes

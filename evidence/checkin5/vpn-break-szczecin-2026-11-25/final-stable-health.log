@@ -1,0 +1,9 @@
+SZCZECIN=active
+MATI=active
+ExecMainStatus=0
+ActiveEnterTimestamp=Wed 2026-11-25 21:13:30 CET
+{
+  "database": "ok",
+  "version": "12.1.10",
+  "commit": "619bd51f27dc73c6ccfa4442cd5d05addaa70ed9"
+}

@@ -1,0 +1,27 @@
+{
+  "groups": [
+    {
+      "sensor_id": "SZCZ-AIR-01",
+      "run_id": "laptop-vpn-break-20261125T195152Z",
+      "input_rows": 30
+    },
+    {
+      "sensor_id": "SZCZ-HUM-01",
+      "run_id": "laptop-vpn-break-20261125T195152Z",
+      "input_rows": 30
+    },
+    {
+      "sensor_id": "SZCZ-TEMP-01",
+      "run_id": "laptop-vpn-break-20261125T195152Z",
+      "input_rows": 30
+    }
+  ],
+  "events": [],
+  "excluded_rows": 0,
+  "excluded_windows": [],
+  "notes": [
+    "Rows are analysed in input order within sensor_id/run_id; use chronological exports and a new run_id after restart.",
+    "Duplicate analysis is advisory only. InfluxDB can overwrite duplicate points, so absence here cannot prove no QoS 1 duplicate occurred.",
+    "A gap is not attributed to VPN loss until restart and queue-overflow logs have been checked."
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "baseline": [
+    {
+      "scope": "city",
+      "key": "Szczecin",
+      "count": 51,
+      "mean_ms": -35.720727705882354,
+      "median_ms": -61.871945,
+      "p95_ms": 358.500564,
+      "min_ms": -85.537463,
+      "max_ms": 591.929394,
+      "negative_count": 48
+    },
+    {
+      "scope": "sensor",
+      "key": "SZCZ-AIR-01",
+      "count": 17,
+      "mean_ms": -40.89941911764706,
+      "median_ms": -61.871945,
+      "p95_ms": 358.500564,
+      "min_ms": -80.949679,
+      "max_ms": 358.500564,
+      "negative_count": 16
+    },
+    {
+      "scope": "sensor",
+      "key": "SZCZ-HUM-01",
+      "count": 17,
+      "mean_ms": -38.562359176470586,
+      "median_ms": -61.842761,
+      "p95_ms": 398.06629,
+      "min_ms": -82.898858,
+      "max_ms": 398.06629,
+      "negative_count": 16
+    },
+    {
+      "scope": "sensor",
+      "key": "SZCZ-TEMP-01",
+      "count": 17,
+      "mean_ms": -27.700404823529414,
+      "median_ms": -63.000939,
+      "p95_ms": 591.929394,
+      "min_ms": -85.537463,
+      "max_ms": 591.929394,
+      "negative_count": 16
+    }
+  ],
+  "queued": [
+    {
+      "scope": "city",
+      "key": "Szczecin",
+      "count": 18,
+      "mean_ms": 100522.0382078889,
+      "median_ms": 100523.721638,
+      "p95_ms": 175537.040111,
+      "min_ms": 25511.332429,
+      "max_ms": 175537.040111,
+      "negative_count": 0
+    },
+    {
+      "scope": "sensor",
+      "key": "SZCZ-AIR-01",
+      "count": 6,
+      "mean_ms": 100525.3177825,
+      "median_ms": 100527.134784,
+      "p95_ms": 175537.040111,
+      "min_ms": 25518.277791,
+      "max_ms": 175537.040111,
+      "negative_count": 0
+    },
+    {
+      "scope": "sensor",
+      "key": "SZCZ-HUM-01",
+      "count": 6,
+      "mean_ms": 100522.83619383334,
+      "median_ms": 100524.75644950001,
+      "p95_ms": 175534.163743,
+      "min_ms": 25516.703523,
+      "max_ms": 175534.163743,
+      "negative_count": 0
+    },
+    {
+      "scope": "sensor",
+      "key": "SZCZ-TEMP-01",
+      "count": 6,
+      "mean_ms": 100517.96064733334,
+      "median_ms": 100520.3117275,
+      "p95_ms": 175529.237685,
+      "min_ms": 25511.332429,
+      "max_ms": 175529.237685,
+      "negative_count": 0
+    }
+  ],
+  "post-recovery-new": [
+    {
+      "scope": "city",
+      "key": "Szczecin",
+      "count": 21,
+      "mean_ms": 57.98517957142857,
+      "median_ms": -71.084779,
+      "p95_ms": -65.921019,
+      "min_ms": -90.102766,
+      "max_ms": 2717.058032,
+      "negative_count": 20
+    },
+    {
+      "scope": "sensor",
+      "key": "SZCZ-AIR-01",
+      "count": 7,
+      "mean_ms": 323.528163,
+      "median_ms": -70.86161,
+      "p95_ms": 2717.058032,
+      "min_ms": -86.461839,
+      "max_ms": 2717.058032,
+      "negative_count": 6
+    },
+    {
+      "scope": "sensor",
+      "key": "SZCZ-HUM-01",
+      "count": 7,
+      "mean_ms": -74.36517985714285,
+      "median_ms": -71.084779,
+      "p95_ms": -65.921019,
+      "min_ms": -88.684913,
+      "max_ms": -65.921019,
+      "negative_count": 7
+    },
+    {
+      "scope": "sensor",
+      "key": "SZCZ-TEMP-01",
+      "count": 7,
+      "mean_ms": -75.20744442857142,
+      "median_ms": -71.36232,
+      "p95_ms": -66.207255,
+      "min_ms": -90.102766,
+      "max_ms": -66.207255,
+      "negative_count": 7
+    }
+  ],
+  "recovery": [
+    {
+      "scope": "city",
+      "key": "Szczecin",
+      "count": 39,
+      "mean_ms": 46426.00965417949,
+      "median_ms": -65.921019,
+      "p95_ms": 175534.163743,
+      "min_ms": -90.102766,
+      "max_ms": 175537.040111,
+      "negative_count": 20
+    },
+    {
+      "scope": "sensor",
+      "key": "SZCZ-AIR-01",
+      "count": 13,
+      "mean_ms": 46570.50798738461,
+      "median_ms": 2717.058032,
+      "p95_ms": 175537.040111,
+      "min_ms": -86.461839,
+      "max_ms": 175537.040111,
+      "negative_count": 6
+    },
+    {
+      "scope": "sensor",
+      "key": "SZCZ-HUM-01",
+      "count": 13,
+      "mean_ms": 46355.11237723077,
+      "median_ms": -65.921019,
+      "p95_ms": 175534.163743,
+      "min_ms": -88.684913,
+      "max_ms": 175534.163743,
+      "negative_count": 7
+    },
+    {
+      "scope": "sensor",
+      "key": "SZCZ-TEMP-01",
+      "count": 13,
+      "mean_ms": 46352.40859792308,
+      "median_ms": -66.207255,
+      "p95_ms": 175529.237685,
+      "min_ms": -90.102766,
+      "max_ms": 175529.237685,
+      "negative_count": 7
+    }
+  ],
+  "full": [
+    {
+      "scope": "city",
+      "key": "Szczecin",
+      "count": 90,
+      "mean_ms": 20097.69577111111,
+      "median_ms": -62.436442,
+      "p95_ms": 145522.229123,
+      "min_ms": -90.102766,
+      "max_ms": 175537.040111,
+      "negative_count": 68
+    },
+    {
+      "scope": "sensor",
+      "key": "SZCZ-AIR-01",
+      "count": 30,
+      "mean_ms": 20157.3771237,
+      "median_ms": -61.359969,
+      "p95_ms": 145525.04613,
+      "min_ms": -86.461839,
+      "max_ms": 175537.040111,
+      "negative_count": 22
+    },
+    {
+      "scope": "sensor",
+      "key": "SZCZ-HUM-01",
+      "count": 30,
+      "mean_ms": 20065.363359933333,
+      "median_ms": -63.7760085,
+      "p95_ms": 145522.229123,
+      "min_ms": -88.684913,
+      "max_ms": 175534.163743,
+      "negative_count": 23
+    },
+    {
+      "scope": "sensor",
+      "key": "SZCZ-TEMP-01",
+      "count": 30,
+      "mean_ms": 20070.3468297,
+      "median_ms": -64.3710365,
+      "p95_ms": 145517.250384,
+      "min_ms": -90.102766,
+      "max_ms": 175529.237685,
+      "negative_count": 23
+    }
+  ]
+}

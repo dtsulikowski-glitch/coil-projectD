@@ -1,0 +1,5 @@
+scope,key,count,mean_ms,median_ms,p95_ms,min_ms,max_ms,negative_count
+city,Szczecin,21,57.985,-71.085,-65.921,-90.103,2717.058032,20
+sensor,SZCZ-AIR-01,7,323.528,-70.862,2717.058,-86.462,2717.058032,6
+sensor,SZCZ-HUM-01,7,-74.365,-71.085,-65.921,-88.685,-65.921019,7
+sensor,SZCZ-TEMP-01,7,-75.207,-71.362,-66.207,-90.103,-66.207255,7
